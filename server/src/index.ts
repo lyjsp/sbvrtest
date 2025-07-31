@@ -8,7 +8,16 @@ app.use(bodyParser.json());
 
 const game = new WordleGame({
   maxRounds: 6,
-  wordList: ["apple", "grape", "mango", "peach", "melon"],
+  wordList: [
+    "HELLO",
+    "WORLD",
+    "QUITE",
+    "FANCY",
+    "FRESH",
+    "PANIC",
+    "CRAZY",
+    "BUGGY",
+  ],
 });
 
 app.post("/guess", (req, res) => {
