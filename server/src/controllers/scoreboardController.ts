@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import {ScoreboardService} from "../services/ScoreboardService";
+import {ScoreboardService} from "../services/scoreboardService";
 
 export class ScoreboardController {
   private service: ScoreboardService;

@@ -1,7 +1,7 @@
 import {Router} from "express";
 import {checkUserIdHeader} from "../middlewares/auth";
 import {ScoreboardController} from "../controllers/scoreboardController";
-import {ScoreboardService} from "../services/ScoreboardService";
+import {ScoreboardService} from "../services/scoreboardService";
 
 const scoreboardController = new ScoreboardController(new ScoreboardService());
 const router = Router();
