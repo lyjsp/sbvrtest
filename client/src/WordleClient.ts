@@ -250,10 +250,10 @@ export class WordleClient {
       const choice = await this.promptService.prompt("Select an option:\n");
       switch (choice) {
         case "1":
-          await this.showGameStatus();
+          await this.playGame();
           break;
         case "2":
-          await this.playGame();
+          await this.showGameStatus();
           break;
         case "3":
           await this.showScoreBoard();

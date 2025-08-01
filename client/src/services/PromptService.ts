@@ -18,8 +18,8 @@ export class PromptService {
 
   showMenu() {
     console.log("\n=== Wordle Menu ===");
-    console.log("1. Game status");
-    console.log("2. Play");
+    console.log("1. Play");
+    console.log("2. Game status");
     console.log("3. See score board");
     console.log("4. See my score");
     console.log("5. See my current game results");
