@@ -4,6 +4,7 @@ import {PlayerScore} from "../../common/src/game/types";
 import {PromptService} from "./services/PromptService";
 import {PlayerService} from "./services/PlayerService";
 import {WebSocketService} from "./services/WebSocketService";
+import {ResponseDto} from "../../common/src/dto/response.dto";
 
 export class WordleClient {
   private promptService = new PromptService();
@@ -45,9 +46,18 @@ export class WordleClient {
 
   private async showGameStatus() {
     try {
-      const status = await this.getGameStatus();
+      const status: ResponseDto = await this.getGameStatus();
       console.log("\n--- Game Status ---");
-      console.log(status);
+      console.log(`Guess History:`);
+      status.guessHistory.forEach((history, i) => {
+        console.log(
+          `${i + 1}. Guess: ${history.guess}, Results: ${history.results.join(
+            ", "
+          )}`
+        );
+      });
+      console.log(`Max Rounds: ${status.maxRounds}`);
+      console.log(`Remaining Rounds: ${status.remainingRounds}`);
     } catch (err: any) {
       console.error(
         "Error showing game status:",
@@ -82,14 +92,29 @@ export class WordleClient {
           player: this.playerName,
           guess,
         });
-        console.log("Guess:", guess, "=>", res.data);
+
+        // Enhanced log for player
+        console.log(
+          `Remaining Rounds: ${res.data.remainingRounds}/${res.data.maxRounds}`
+        );
+        console.log(`Your Guesses:`);
+        res.data.guessHistory.forEach((item: any, idx: number) => {
+          console.log(
+            `  ${idx + 1}. "${item.guess}" => ${item.results.join(" ")}${
+              item.isWon ? " (WIN)" : ""
+            }`
+          );
+        });
+        if (res.data.gameOver) {
+          console.log(`Game Over! You ${res.data.win ? "won" : "lost"}!`);
+        }
+
         if (res.data.remainingRounds <= 0) {
           console.log(`Game Over! You ${res.data.win ? "won" : "lost"}!`);
           this.isPlaying = false;
         }
       } catch (err: any) {
         console.error(err?.response?.data?.error || err.message || err);
-        this.isPlaying = false;
       }
     }
   }
@@ -194,7 +219,7 @@ export class WordleClient {
           }
         },
         onCountdown: (msg) => {
-          if (msg.countdown > 0) {
+          if (msg.countdown > 0 && this.isPlaying) {
             console.log(`Game restarts in ${msg.countdown} seconds...\n`);
           }
         },
@@ -202,6 +227,9 @@ export class WordleClient {
           if (this.isPlaying) {
             console.log("Game restarted! You can guess again.\n");
             this.playGame();
+          } else {
+            console.log("Game restarted! You can start a new game.\n");
+            this.isPlaying = false;
           }
         },
         onClose: () => {
