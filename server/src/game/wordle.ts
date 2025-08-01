@@ -1,21 +1,28 @@
 import {LetterResult} from "../../../common/src/game/enums";
 import {GuessResult, WordleConfig} from "../../../common/src/game/types";
+import {PlayerHistory} from "./playerHistory";
+import {WordleValidator} from "./wordleValidator";
 
 export class WordleGame {
-  private wordLength: number;
-  private answer: string;
-  private guesses: GuessResult[] = [];
   private readonly maxRounds: number;
   private readonly wordList: string[];
+  private readonly playerHistories: Map<string, PlayerHistory>;
+  private wordLength: number;
+  private answer: string;
+  private isGameOver;
+  private gameOverAt: Date | null;
+  private firstWinnerId: string | null;
 
   constructor(config: WordleConfig) {
+    this.maxRounds = config.maxRounds;
     this.wordList = config.wordList.map((w) => w.toLowerCase());
     this.validateWordList(this.wordList);
-    this.maxRounds = config.maxRounds;
-    // Randomly choose an answer from the list
-    this.answer =
-      this.wordList[Math.floor(Math.random() * this.wordList.length)];
-    this.wordLength = this.getAnswer().length;
+    this.answer = this.pickRandomAnswer();
+    this.wordLength = this.answer.length;
+    this.playerHistories = new Map<string, PlayerHistory>();
+    this.isGameOver = false;
+    this.gameOverAt = null;
+    this.firstWinnerId = null;
   }
 
   /**
@@ -28,51 +35,75 @@ export class WordleGame {
 
   /**
    * Attempt a guess
+   * @param userId player id
    * @param word guess answer
    * @returns GuessResults
    */
-  guess(word: string): GuessResult {
+  guess(userId: string, word: string): GuessResult {
     const normalizedGuess = word.toLowerCase();
 
-    if (!new RegExp(`^[a-z]{${this.wordLength}}$`).test(normalizedGuess)) {
-      throw new Error(
-        `Guess must be exactly ${this.wordLength} English letters.`
-      );
-    }
-    if (!this.wordList.includes(normalizedGuess)) {
-      throw new Error("Guess must be in the allowed word list.");
-    }
-    if (this.isGameOver()) {
-      throw new Error("Game is already over.");
-    }
+    WordleValidator.validateGuessFormat(normalizedGuess, this.wordLength);
+    WordleValidator.validateGuessInWordList(normalizedGuess, this.wordList);
+    WordleValidator.validateGameNotOver(this.isGameOver);
 
     const results = this.calculateResult(normalizedGuess);
-    const guessResult: GuessResult = {guess: normalizedGuess, results};
-    this.guesses.push(guessResult);
+    const guessResult: GuessResult = {
+      guess: normalizedGuess,
+      results,
+      isWon: results.every((r) => r === LetterResult.Hit),
+    };
+
+    // Store guess in player's history
+    let playerHistory = this.playerHistories.get(userId);
+    if (!playerHistory) {
+      playerHistory = new PlayerHistory(this.maxRounds);
+      this.playerHistories.set(userId, playerHistory);
+    }
+    playerHistory.addGuess(guessResult);
+
+    // Set game over if player has won
+    if (guessResult.isWon) {
+      this.firstWinnerId = this.firstWinnerId || userId;
+      this.handleGameOver();
+    }
+
     return guessResult;
   }
 
   /**
-   * Check if player won
+   * Mark the game as over and set the time.
    */
-  isWin(): boolean {
-    return this.guesses.some((g) =>
-      g.results.every((r) => r === LetterResult.Hit)
-    );
+  private handleGameOver(): void {
+    this.isGameOver = true;
+    this.gameOverAt = new Date();
   }
 
-  /**
-   * Check if player lost
-   */
-  isLose(): boolean {
-    return this.guesses.length >= this.maxRounds && !this.isWin();
+  getPlayerHistory(userId: string): PlayerHistory | undefined {
+    return this.playerHistories.get(userId);
   }
 
-  /**
-   * Check if the game is over
-   */
-  isGameOver(): boolean {
-    return this.isWin() || this.isLose();
+  getAllPlayerHistories(): Map<string, PlayerHistory> {
+    return this.playerHistories;
+  }
+
+  resetPlayerHistories(): void {
+    this.playerHistories.forEach((history) => history.reset());
+  }
+
+  setIsGameOver(value: boolean): void {
+    this.isGameOver = value;
+  }
+
+  getIsGameOver(): boolean {
+    return this.isGameOver;
+  }
+
+  setGameOverAt(date: Date | null): void {
+    this.gameOverAt = date;
+  }
+
+  getGameOverAt(): Date | null {
+    return this.gameOverAt;
   }
 
   /**
@@ -80,20 +111,6 @@ export class WordleGame {
    */
   getMaxRounds(): number {
     return this.maxRounds;
-  }
-
-  /**
-   * Get the number of remaining rounds
-   */
-  getRemainingRounds(): number {
-    return this.maxRounds - this.guesses.length;
-  }
-
-  /**
-   * Get the game history
-   */
-  getHistory(): GuessResult[] {
-    return this.guesses;
   }
 
   /**
@@ -111,12 +128,29 @@ export class WordleGame {
   }
 
   /**
-   * Restart the game with a new random answer
+   * Get the first winner's userId, or null if no winner yet.
+   */
+  getFirstWinnerId(): string | null {
+    return this.firstWinnerId;
+  }
+
+  /**
+   * Restart the game with a new random answer.
    */
   restartGame(): void {
-    this.guesses = [];
-    this.answer =
-      this.wordList[Math.floor(Math.random() * this.wordList.length)];
+    this.playerHistories.clear();
+    this.answer = this.pickRandomAnswer();
+    this.wordLength = this.answer.length;
+    this.isGameOver = false;
+    this.gameOverAt = null;
+    this.firstWinnerId = null;
+  }
+
+  /**
+   * Pick a random answer from the word list.
+   */
+  private pickRandomAnswer(): string {
+    return this.wordList[Math.floor(Math.random() * this.wordList.length)];
   }
 
   /**
@@ -133,35 +167,36 @@ export class WordleGame {
   }
 
   /**
-   * Calculate the hit/present/miss for each letter
+   * Calculate the hit/present/miss for each letter.
    */
   private calculateResult(guess: string): LetterResult[] {
-    const result: LetterResult[] = Array(5).fill(LetterResult.Miss);
+    const result: LetterResult[] = Array(this.wordLength).fill(
+      LetterResult.Miss
+    );
     const answerArray = this.answer.split("");
     const guessArray = guess.split("");
 
-    // First pass: mark hits
-    const usedAnswerIndices = new Set<number>();
-    guessArray.forEach((ch, i) => {
-      if (ch === answerArray[i]) {
+    // First pass: mark hits and count non-hit letters in answer
+    const answerLetterCounts: Record<string, number> = {};
+
+    for (let i = 0; i < this.wordLength; i++) {
+      if (guessArray[i] === answerArray[i]) {
         result[i] = LetterResult.Hit;
-        usedAnswerIndices.add(i);
+      } else {
+        answerLetterCounts[answerArray[i]] =
+          (answerLetterCounts[answerArray[i]] || 0) + 1;
       }
-    });
+    }
 
-    // Second pass: mark presents
-    guessArray.forEach((ch, i) => {
-      if (result[i] === LetterResult.Hit) return;
-
-      const idx = answerArray.findIndex(
-        (ansCh, ansIdx) => ansCh === ch && !usedAnswerIndices.has(ansIdx)
-      );
-
-      if (idx !== -1) {
+    // Second pass: mark presents for letters that are in the answer but not hits
+    for (let i = 0; i < this.wordLength; i++) {
+      if (result[i] === LetterResult.Hit) continue;
+      const guessLetter = guessArray[i];
+      if (answerLetterCounts[guessLetter]) {
         result[i] = LetterResult.Present;
-        usedAnswerIndices.add(idx);
+        answerLetterCounts[guessLetter]--; // Avoids double counting letters that are already hits
       }
-    });
+    }
 
     return result;
   }
