@@ -48,7 +48,7 @@ export class GameService {
     this.validatePlayerRounds(userId);
     const result = game.guess(userId, guess);
     this.updateScoreboard(userId, player);
-    this.broadcastPoints(player, result);
+    this.broadcastPoints(userId, player, result);
 
     if (result.isWon) {
       this.handleWin(userId, player, guess);
@@ -80,7 +80,11 @@ export class GameService {
     scoreboard.addRound(userId, player);
   }
 
-  private broadcastPoints(player: string, result: GuessResult): void {
+  private broadcastPoints(
+    userId: string,
+    player: string,
+    result: GuessResult
+  ): void {
     const hit = result.results.filter((r) => r === LetterResult.Hit).length;
     const present = result.results.filter(
       (r) => r === LetterResult.Present
@@ -88,6 +92,7 @@ export class GameService {
     if (hit > 0 || present > 0) {
       wsInstance?.broadcast({
         type: WebsocketMessageType.Points,
+        playerId: userId,
         player,
         points: {hit, present},
       });
@@ -98,6 +103,7 @@ export class GameService {
     scoreboard.addScore(userId, player);
     wsInstance?.broadcast({
       type: WebsocketMessageType.Win,
+      playerId: userId,
       player,
       guess,
       answer: game.getAnswer(),

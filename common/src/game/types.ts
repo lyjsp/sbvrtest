@@ -24,6 +24,7 @@ export type PlayerPoints = {
 
 export type PlayerEvent = {
   type: "points" | "win" | "countdown" | "restart";
+  playerId?: string;
   player?: string;
   points?: PlayerPoints;
   guess?: string;
