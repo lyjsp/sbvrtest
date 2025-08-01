@@ -183,6 +183,7 @@ export class WordleGame {
       if (guessArray[i] === answerArray[i]) {
         result[i] = LetterResult.Hit;
       } else {
+        // Count unmatched letters in the answer
         answerLetterCounts[answerArray[i]] =
           (answerLetterCounts[answerArray[i]] || 0) + 1;
       }
