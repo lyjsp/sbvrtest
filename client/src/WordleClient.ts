@@ -194,7 +194,9 @@ export class WordleClient {
 
   private setupWebSocket() {
     this.wsService.connect(
-      `ws://localhost:8080?playerId=${this.playerService.getPlayerId()}`,
+      `ws://localhost:8080?playerId=${this.playerService.getPlayerId()}&playerName=${
+        this.playerName
+      }`,
       {
         type: "handshake",
         playerId: this.playerService.getPlayerId(),

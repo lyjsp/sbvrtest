@@ -38,14 +38,25 @@ export class WordleWebSocketServer {
   }
 
   private setupConnection() {
-    this.wsServer.on("connection", (connection: WebSocket) => {
-      console.log("WebSocket connection established");
+    this.wsServer.on(
+      "connection",
+      (connection: WebSocket, request: IncomingMessage) => {
+        const {playerId, playerName} = parse(request.url!, true).query;
+        console.log(
+          `WebSocket connection established${
+            playerId ? ` for playerId: ${playerId}` : ""
+          } ${playerName ? `with playerName: ${playerName}` : ""}`
+        );
 
-      connection.on("message", (bytes) => {
-        console.log("received %s", bytes);
-        // You can add message handling logic here if needed
-      });
-    });
+        connection.on("close", () => {
+          console.log(
+            `WebSocket connection closed${
+              playerId ? ` for playerId: ${playerId}` : ""
+            } ${playerName ? `with playerName: ${playerName}` : ""}`
+          );
+        });
+      }
+    );
   }
 
   public broadcast(event: PlayerEvent) {
