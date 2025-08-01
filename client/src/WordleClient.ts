@@ -97,6 +97,11 @@ export class WordleClient {
         console.log(
           `Remaining Rounds: ${res.data.remainingRounds}/${res.data.maxRounds}`
         );
+        console.log(`
+- O means Hit (letter is in the target word and in the correct spot)
+- ? means Present (letter is in the target word, but not in the correct spot)
+- _ means Miss (letter is not in the target word)
+          `);
         console.log(`Your Guesses:`);
         res.data.guessHistory.forEach((item: any, idx: number) => {
           console.log(
