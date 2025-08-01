@@ -3,6 +3,7 @@ import {
   LetterResult,
   WebsocketMessageType,
 } from "../../../common/src/game/enums";
+import {GuessResult} from "../../../common/src/game/types";
 import {game, scoreboard} from "../game";
 import {wsInstance} from "../websocket";
 
@@ -46,7 +47,7 @@ export class GameService {
     this.validateGameState(guess);
     this.validatePlayerRounds(userId);
     const result = game.guess(userId, guess);
-    this.updateScoreboard(userId, player, result);
+    this.updateScoreboard(userId, player);
     this.broadcastPoints(player, result);
 
     if (result.isWon) {
@@ -75,16 +76,14 @@ export class GameService {
     }
   }
 
-  private updateScoreboard(userId: string, player: string, result: any): void {
+  private updateScoreboard(userId: string, player: string): void {
     scoreboard.addRound(userId, player);
   }
 
-  private broadcastPoints(player: string, result: any): void {
-    const hit = result.results.filter(
-      (r: any) => r === LetterResult.Hit
-    ).length;
+  private broadcastPoints(player: string, result: GuessResult): void {
+    const hit = result.results.filter((r) => r === LetterResult.Hit).length;
     const present = result.results.filter(
-      (r: any) => r === LetterResult.Present
+      (r) => r === LetterResult.Present
     ).length;
     if (hit > 0 || present > 0) {
       wsInstance?.broadcast({
@@ -106,7 +105,7 @@ export class GameService {
     wsInstance?.startRestartCountdown(game);
   }
 
-  private buildResponse(userId: string, result: any): ResponseDto {
+  private buildResponse(userId: string, result: GuessResult): ResponseDto {
     const playerHistory = game.getPlayerHistory(userId);
     if (!playerHistory) {
       throw new Error("Player history not found.");
