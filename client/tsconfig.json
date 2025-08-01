@@ -10,10 +10,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strictPropertyInitialization": false,
-    "paths": {
-      "@common/*": ["../common/src/*"],
-      "@common": ["../common/src/index.ts"]
-    }
+    "paths": {}
   },
   "include": ["src/**/*", "../common/src/**/*.ts", "../common/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts"]
