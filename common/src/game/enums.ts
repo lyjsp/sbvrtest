@@ -6,3 +6,10 @@ export enum LetterResult {
   Present = "?",
   Miss = "_",
 }
+
+export enum WebsocketMessageType {
+  Points = "points",
+  Win = "win",
+  Countdown = "countdown",
+  Restart = "restart",
+}
