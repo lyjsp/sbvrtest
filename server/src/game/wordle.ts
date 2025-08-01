@@ -15,7 +15,7 @@ export class WordleGame {
 
   constructor(config: WordleConfig) {
     this.maxRounds = config.maxRounds;
-    this.wordList = config.wordList.map((w) => w.toLowerCase());
+    this.wordList = config.wordList.map((w) => w.toUpperCase());
     this.validateWordList(this.wordList);
     this.answer = this.pickRandomAnswer();
     this.wordLength = this.answer.length;
@@ -30,7 +30,7 @@ export class WordleGame {
    * @param answer the answer word to set
    */
   setAnswer(answer: string): void {
-    this.answer = answer.toLowerCase();
+    this.answer = answer.toUpperCase();
   }
 
   /**
@@ -40,7 +40,7 @@ export class WordleGame {
    * @returns GuessResults
    */
   guess(userId: string, word: string): GuessResult {
-    const normalizedGuess = word.toLowerCase();
+    const normalizedGuess = word.toUpperCase();
 
     WordleValidator.validateGuessFormat(normalizedGuess, this.wordLength);
     WordleValidator.validateGuessInWordList(normalizedGuess, this.wordList);

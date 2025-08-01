@@ -1,6 +1,6 @@
 export class WordleValidator {
   static validateGuessFormat(guess: string, wordLength: number): void {
-    if (!new RegExp(`^[a-z]{${wordLength}}$`).test(guess)) {
+    if (!new RegExp(`^[A-Z]{${wordLength}}$`).test(guess)) {
       throw new Error(`Guess must be exactly ${wordLength} English letters.`);
     }
   }
