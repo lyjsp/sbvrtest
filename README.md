@@ -46,7 +46,7 @@
 
 ## Default Configuration
 
-- The default word list is:
+- The default word list is (number of letter for each word has to be consistent, otherwise error will be thrown when the server start):
   ```
   HELLO, WORLD, QUITE, FANCY, FRESH, PANIC, CRAZY, BUGGY, SCARE
   ```
