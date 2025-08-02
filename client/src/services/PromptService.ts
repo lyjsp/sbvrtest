@@ -1,16 +1,19 @@
 import * as readline from "readline";
+import {MenuOption} from "../common/types/prompt";
 
 export class PromptService {
   private allowEsc: boolean = false;
   private escCancelled = false;
   private escHandler?: () => void;
+  private readonly menuOptions: MenuOption[];
 
   private rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
 
-  constructor() {
+  constructor(menuOptions: MenuOption[]) {
+    this.menuOptions = menuOptions;
     this.listenForEsc();
   }
 
@@ -41,10 +44,12 @@ export class PromptService {
 
     return new Promise((resolve) => {
       this.escHandler = () => {
-        console.log("\nPrompt cancelled by ESC.");
+        console.log("\nPrompt cancelled by ESC. Returning to menu.");
         this.allowEsc = false;
         this.escCancelled = true;
-        this.showMenu();
+        // Simulate pressing Enter to go back to the menu
+        this.rl.write(null, {name: "return"});
+        resolve(null);
       };
       this.rl.question(question, (input) => {
         this.escHandler = undefined;
@@ -62,12 +67,16 @@ export class PromptService {
     this.rl.close();
   }
 
-  showMenu() {
-    console.log("\n=== Wordle Menu ===");
-    console.log("1. Play");
-    console.log("2. Game status");
-    console.log("3. See score board");
-    console.log("4. See my score");
-    console.log("0. Exit");
+  async showMenu(): Promise<string | null> {
+    const menuPromptMessage = `
+=== Wordle Menu ===
+Select an option:
+${this.menuOptions
+  .map((option) => `${option.command}. ${option.description}`)
+  .join("\n")}
+Type your choice and press Enter.
+    `;
+    const choice = await this.prompt(menuPromptMessage);
+    return choice;
   }
 }

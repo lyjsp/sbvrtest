@@ -5,15 +5,29 @@ import {PromptService} from "./services/PromptService";
 import {PlayerService} from "./services/PlayerService";
 import {WebSocketService} from "./services/WebSocketService";
 import {ResponseDto} from "../../common/src/dto/response.dto";
+import {MenuOption} from "./common/types/prompt";
+
+const menuOptions: MenuOption[] = [
+  {command: "1", description: "Play"},
+  {command: "2", description: "Game status"},
+  {command: "3", description: "See score board"},
+  {command: "4", description: "See my score"},
+  {command: "0", description: "Exit"},
+];
 
 export class WordleClient {
-  private promptService = new PromptService();
-  private playerService = new PlayerService();
-  private wsService = new WebSocketService();
-  private playerName = "";
-  private isPlaying = false;
+  private promptService;
+  private playerService;
+  private wsService;
+  private playerName;
+  private isPlaying;
 
   constructor() {
+    this.promptService = new PromptService(menuOptions);
+    this.playerService = new PlayerService();
+    this.wsService = new WebSocketService();
+    this.playerName = "";
+    this.isPlaying = false;
     axiosInstance.defaults.headers.common[USER_ID_HEADER] =
       this.playerService.getPlayerId();
   }
@@ -198,15 +212,18 @@ export class WordleClient {
     }
   }
 
-  private setupWebSocket(): void {
+  private showGreeting(): void {
+    console.log(`
+Welcome ${this.playerName}!`);
+  }
+
+  private setupWebSocket(playerId: string, playerName: string): void {
     this.wsService.connect(
-      `ws://localhost:8080?playerId=${this.playerService.getPlayerId()}&playerName=${
-        this.playerName
-      }`,
+      `ws://localhost:8080?playerId=${playerId}&playerName=${playerName}`,
       {
         type: "handshake",
-        playerId: this.playerService.getPlayerId(),
-        playerName: this.playerName,
+        playerId,
+        playerName,
       },
       {
         onPoints: (msg) => {
@@ -256,11 +273,28 @@ export class WordleClient {
 
   public async start(): Promise<void> {
     await this.promptName();
-    this.setupWebSocket();
 
+    const playerId = this.playerService.getPlayerId();
+    const playerName = this.playerName;
+    this.setupWebSocket(playerId, playerName);
+
+    this.showGreeting();
+
+    await this.startMainMenu();
+  }
+
+  private async startMainMenu(): Promise<void> {
     while (true) {
-      this.promptService.showMenu();
-      const choice = await this.promptService.prompt("Select an option:\n");
+      const choice = await this.promptService.showMenu();
+
+      // Show header for the selected menu option
+      const matchedChoice = menuOptions.find(
+        (option) => option.command === choice
+      );
+      if (matchedChoice && matchedChoice.description) {
+        console.log(`\n=== ${matchedChoice.description} ===`);
+      }
+
       switch (choice) {
         case "1":
           await this.playGame();
