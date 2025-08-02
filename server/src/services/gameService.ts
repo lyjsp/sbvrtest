@@ -23,6 +23,7 @@ export class GameService {
         remainingRounds: playerHistory.getRemainingRounds(),
         gameOver: game.getIsGameOver(),
         win: playerHistory.isWon(),
+        wordLength: game.getWordLength(),
         ...(game.getIsGameOver() && {answer: game.getAnswer()}),
       };
     } else {
@@ -34,6 +35,7 @@ export class GameService {
         remainingRounds: game.getMaxRounds(),
         gameOver: game.getIsGameOver(),
         win: false,
+        wordLength: game.getWordLength(),
         ...(game.getIsGameOver() && {answer: game.getAnswer()}),
       };
     }
@@ -124,6 +126,7 @@ export class GameService {
       remainingRounds: playerHistory.getRemainingRounds(),
       gameOver: game.getIsGameOver(),
       win: playerHistory.isWon(),
+      wordLength: game.getWordLength(),
       ...(game.getIsGameOver() && {answer: game.getAnswer()}),
     };
   }

@@ -29,8 +29,13 @@ export class WordleClient {
     return this.playerName;
   }
 
-  private async promptGuess(): Promise<string | null> {
-    const input = await this.promptService.prompt("Enter your guess:\n", true);
+  private async promptGuess(numberOfLetters?: number): Promise<string | null> {
+    const input = await this.promptService.prompt(
+      `Enter your guess${
+        numberOfLetters ? ` (${numberOfLetters} letters)` : ""
+      }  :\n`,
+      true
+    );
     return input;
   }
 
@@ -69,7 +74,7 @@ export class WordleClient {
   }
 
   private async playGame() {
-    const status = await this.getGameStatus();
+    const status: ResponseDto = await this.getGameStatus();
 
     if (status.remainingRounds <= 0) {
       console.log("No remaining rounds. Please wait for next game.");
@@ -80,7 +85,7 @@ export class WordleClient {
     this.isPlaying = true;
 
     while (this.isPlaying) {
-      const guess = await this.promptGuess();
+      const guess = await this.promptGuess(status.wordLength);
 
       if (guess === null) {
         this.isPlaying = false;
