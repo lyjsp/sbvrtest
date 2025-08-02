@@ -1,9 +1,9 @@
 import {IncomingMessage, Server} from "http";
 import {WebSocketServer, WebSocket} from "ws";
 import {parse} from "url";
-import {WordleGame} from "./game/wordle/wordleGame";
 import {PlayerEvent} from "../../common/src/game/types";
 import {WebsocketMessageType} from "../../common/src/game/enums";
+import {AbstractWordleGame} from "./game/wordle/abstractWordleGame";
 
 export class WordleWebSocketServer {
   private wsServer: WebSocketServer;
@@ -66,7 +66,7 @@ export class WordleWebSocketServer {
     });
   }
 
-  public startRestartCountdown(game: WordleGame) {
+  public startRestartCountdown(game: AbstractWordleGame) {
     this.countdown = 10;
     this.broadcast({
       type: WebsocketMessageType.Countdown,

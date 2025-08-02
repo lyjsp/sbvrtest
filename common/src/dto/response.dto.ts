@@ -11,5 +11,4 @@ export class ResponseDto {
   guessHistory: GuessResult[];
   gameOver: boolean;
   win: boolean;
-  answer?: string; // Optional, only set when game is over
 }

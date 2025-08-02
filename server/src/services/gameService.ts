@@ -26,7 +26,6 @@ export class GameService {
         gameOver: game.getIsGameOver(),
         win: playerHistory.isWon(),
         wordLength: game.getWordLength(),
-        ...(game.getIsGameOver() && {answer: game.getAnswer()}),
       };
     } else {
       return {
@@ -39,7 +38,6 @@ export class GameService {
         gameOver: game.getIsGameOver(),
         win: false,
         wordLength: game.getWordLength(),
-        ...(game.getIsGameOver() && {answer: game.getAnswer()}),
       };
     }
   }
@@ -100,7 +98,7 @@ export class GameService {
       playerId: userId,
       player,
       guess,
-      answer: game.getAnswer(),
+      answer: guess,
     });
     wsInstance?.startRestartCountdown(game);
   }
@@ -120,7 +118,6 @@ export class GameService {
       gameOver: game.getIsGameOver(),
       win: playerHistory.isWon(),
       wordLength: game.getWordLength(),
-      ...(game.getIsGameOver() && {answer: game.getAnswer()}),
     };
   }
 }

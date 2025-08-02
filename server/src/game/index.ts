@@ -1,6 +1,7 @@
 import {WordleGame} from "./wordle/wordleGame";
 import {Scoreboard} from "./scoreboard";
 import {ConfigService} from "../services/configService";
+import {AbsurdleGame} from "./wordle/absurdleGame";
 
 const configService = ConfigService.getInstance();
 
@@ -23,7 +24,7 @@ const wordList = configService.get("WORDLE_WORD_LIST")
     ];
 
 export const scoreboard = new Scoreboard();
-export const game = new WordleGame({
+export const game = new AbsurdleGame({
   maxRounds,
   wordList,
 });
