@@ -16,11 +16,17 @@ const menuOptions: MenuOption[] = [
 ];
 
 export class WordleClient {
-  private promptService;
-  private playerService;
-  private wsService;
-  private playerName;
-  private isPlaying;
+  private promptService: PromptService;
+  private playerService: PlayerService;
+  private wsService: WebSocketService;
+  private playerName: string;
+  private isPlaying: boolean;
+
+  private static readonly GAME_RESULT_DESCRIPTION = `
+- O means Hit (letter is in the target word and in the correct spot)
+- ? means Present (letter is in the target word, but not in the correct spot)
+- _ means Miss (letter is not in the target word)
+`;
 
   constructor() {
     this.promptService = new PromptService(menuOptions);
@@ -148,21 +154,17 @@ export class WordleClient {
           this.isPlaying = false;
         }
       } catch (err: any) {
-        console.error(err?.response?.data?.error || err.message || err);
+        this.handleApiError(err, "Error processing your guess:");
       }
     }
   }
 
   private showGameResultDescription(): void {
-    console.log(`
-- O means Hit (letter is in the target word and in the correct spot)
-- ? means Present (letter is in the target word, but not in the correct spot)
-- _ means Miss (letter is not in the target word)
-          `);
+    console.log(WordleClient.GAME_RESULT_DESCRIPTION);
   }
 
   private showGameResults(guessHistory: GuessResult[]): void {
-    console.log(`Your Guesses:`);
+    console.log(`\n--- Your Guesses:`);
     guessHistory.forEach((item: any, idx: number) => {
       console.log(
         `  ${idx + 1}. "${item.guess}" => ${item.results.join(" ")}${
@@ -170,6 +172,7 @@ export class WordleClient {
         }`
       );
     });
+    console.log("--- End of your Guesses ---\n");
   }
 
   private async showScoreBoard(): Promise<void> {
@@ -183,14 +186,12 @@ export class WordleClient {
             `${item.name}: ${item.score} point(s) - ${item.rounds} round(s) played - Accuracy: ${item.accuracy}%`
           );
         });
+        console.log("--- End of Score Board ---\n");
       } else {
         console.log("No score board available.");
       }
     } catch (err: any) {
-      console.error(
-        "Error fetching score board:",
-        err?.response?.data?.error || err.message || err
-      );
+      this.handleApiError(err, "Error fetching score board:");
     }
   }
 
@@ -203,14 +204,12 @@ export class WordleClient {
         console.log(
           `Your score: ${result.score} point(s) - ${result.rounds} round(s) played - Accuracy: ${result.accuracy}%`
         );
+        console.log("--- End of My Score ---\n");
       } else {
         console.log("No score available.");
       }
     } catch (err: any) {
-      console.error(
-        "Error fetching my score:",
-        err?.response?.data?.error || err.message || err
-      );
+      this.handleApiError(err, "Error fetching my score:");
     }
   }
 
@@ -239,16 +238,14 @@ Welcome ${this.playerName}!`);
           }
         },
         onWin: (msg) => {
-          if (
-            msg.playerId === this.playerService.getPlayerId() &&
-            this.isPlaying
-          ) {
+          if (msg.playerId === this.playerService.getPlayerId()) {
             console.log(`🎉 You win! The answer was "${msg.answer}".\n`);
           } else {
             console.log(
               `🎉 Player ${msg.player} wins with "${msg.guess}"! The answer was "${msg.answer}".\n`
             );
           }
+          this.showScoreBoard();
         },
         onCountdown: (msg) => {
           if (msg.countdown > 0 && this.isPlaying) {
@@ -265,9 +262,8 @@ Welcome ${this.playerName}!`);
           }
         },
         onClose: () => {
-          console.log("Disconnected from server.\n");
-          this.promptService.close();
-          process.exit(0);
+          console.log("Disconnected from server. Attempting to reconnect...");
+          setTimeout(() => this.setupWebSocket(playerId, playerName), 3000);
         },
       }
     );
@@ -293,6 +289,7 @@ Welcome ${this.playerName}!`);
       const matchedChoice = menuOptions.find(
         (option) => option.command === choice
       );
+
       if (matchedChoice && matchedChoice.description) {
         console.log(`\n=== ${matchedChoice.description} ===`);
       }
@@ -318,5 +315,12 @@ Welcome ${this.playerName}!`);
           console.log("Invalid option. Please select 0-4.");
       }
     }
+  }
+
+  private handleApiError(err: any, fallbackMessage: string): void {
+    console.error(
+      fallbackMessage,
+      err?.response?.data?.error || err.message || err
+    );
   }
 }
