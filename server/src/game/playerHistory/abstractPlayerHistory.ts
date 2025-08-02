@@ -1,9 +1,9 @@
-import {LetterResult} from "../../../common/src/game/enums";
-import {GuessResult} from "../../../common/src/game/types";
+import {LetterResult} from "../../../../common/src/game/enums";
+import {GuessResult} from "../../../../common/src/game/types";
 
-export class PlayerHistory {
+export abstract class AbstractPlayerHistory {
+  protected guesses: GuessResult[] = [];
   private readonly maxRounds: number;
-  private guesses: GuessResult[] = [];
 
   constructor(maxRounds: number) {
     this.maxRounds = maxRounds;
@@ -42,18 +42,15 @@ export class PlayerHistory {
     );
   }
 
-  isLost(): boolean {
-    return this.guesses.length >= this.maxRounds && !this.isWon();
-  }
-
-  /**
-   * Get the number of remaining rounds
-   */
-  getRemainingRounds(): number {
-    return this.maxRounds - this.guesses.length;
-  }
-
   getCurrentRound(): number {
     return this.guesses.length + 1;
+  }
+
+  getRemainingRounds(): number {
+    return this.maxRounds - this.getGuessCount();
+  }
+
+  get hasRoundsLeft(): boolean {
+    return this.getRemainingRounds() > 0;
   }
 }

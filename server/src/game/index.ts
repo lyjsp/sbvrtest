@@ -1,4 +1,4 @@
-import {WordleGame} from "./wordle";
+import {WordleGame} from "./wordle/wordleGame";
 import {Scoreboard} from "./scoreboard";
 import {ConfigService} from "../services/configService";
 

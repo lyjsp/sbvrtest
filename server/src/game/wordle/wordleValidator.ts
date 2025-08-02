@@ -1,3 +1,5 @@
+import {AbstractPlayerHistory} from "../playerHistory/abstractPlayerHistory";
+
 export class WordleValidator {
   static validateGuessFormat(guess: string, wordLength: number): void {
     if (!new RegExp(`^[A-Z]{${wordLength}}$`).test(guess)) {
@@ -14,6 +16,15 @@ export class WordleValidator {
   static validateGameNotOver(isGameOver: boolean): void {
     if (isGameOver) {
       throw new Error("Game is already over.");
+    }
+  }
+
+  static validatePlayerRoundAvailable(
+    playerHistory: AbstractPlayerHistory,
+    maxRounds: number
+  ): void {
+    if (playerHistory.getGuessCount() >= maxRounds) {
+      throw new Error("Player has no more rounds left.");
     }
   }
 }

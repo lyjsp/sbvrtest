@@ -12,11 +12,8 @@ export interface GuessResult {
 /**
  * Game configuration
  */
-export interface WordleBaseConfig {
+export interface WordleConfig {
   wordList: string[];
-}
-
-export interface WordleConfig extends WordleBaseConfig {
   maxRounds: number;
 }
 

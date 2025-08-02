@@ -5,6 +5,7 @@ import {
 } from "../../../common/src/game/enums";
 import {GuessResult} from "../../../common/src/game/types";
 import {game, scoreboard} from "../game";
+import {WordleValidator} from "../game/wordle/wordleValidator";
 import {wsInstance} from "../websocket";
 
 export class GameService {
@@ -21,7 +22,7 @@ export class GameService {
         guessHistory: playerHistory.getGuessResults(),
         maxRounds: game.getMaxRounds(),
         currentRound: playerHistory.getCurrentRound(),
-        remainingRounds: playerHistory.getRemainingRounds(),
+        remainingRounds: game.getMaxRounds() - playerHistory.getGuessCount(),
         gameOver: game.getIsGameOver(),
         win: playerHistory.isWon(),
         wordLength: game.getWordLength(),
@@ -49,7 +50,6 @@ export class GameService {
     guess: string
   ): ResponseDto {
     this.validateGameState(guess);
-    this.validatePlayerRounds(userId);
     const result = game.guess(userId, guess);
     this.updateScoreboard(userId, player);
     this.broadcastPoints(userId, player, result);
@@ -67,16 +67,6 @@ export class GameService {
     }
     if (!guess || typeof guess !== "string") {
       throw new Error("Guess must be a string.");
-    }
-  }
-
-  private validatePlayerRounds(userId: string): void {
-    const userHistory = game.getPlayerHistory(userId);
-    const playerRemainingRounds = userHistory
-      ? userHistory.getRemainingRounds()
-      : game.getMaxRounds();
-    if (playerRemainingRounds <= 0) {
-      throw new Error("You have no remaining rounds left.");
     }
   }
 
@@ -126,7 +116,7 @@ export class GameService {
       guessHistory: playerHistory.getGuessResults(),
       currentRound: playerHistory.getCurrentRound(),
       maxRounds: game.getMaxRounds(),
-      remainingRounds: playerHistory.getRemainingRounds(),
+      remainingRounds: game.getMaxRounds() - playerHistory.getGuessCount(),
       gameOver: game.getIsGameOver(),
       win: playerHistory.isWon(),
       wordLength: game.getWordLength(),

@@ -1,7 +1,7 @@
 import {IncomingMessage, Server} from "http";
 import {WebSocketServer, WebSocket} from "ws";
 import {parse} from "url";
-import {WordleGame} from "./game/wordle";
+import {WordleGame} from "./game/wordle/wordleGame";
 import {PlayerEvent} from "../../common/src/game/types";
 import {WebsocketMessageType} from "../../common/src/game/enums";
 
