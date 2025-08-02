@@ -1,5 +1,7 @@
 # Server/Client wordle with host cheating that supports multiple-player (TypeScript)
 
+<img width="410" height="439" alt="absurdle-screenshot" src="https://github.com/user-attachments/assets/25fc2480-1927-4867-b52d-b2c2a0f45b75" />
+
 ## Getting Started
 
 1. **Install dependencies:**
