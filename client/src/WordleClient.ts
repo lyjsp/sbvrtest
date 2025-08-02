@@ -20,16 +20,18 @@ export class WordleClient {
 
   private async promptName(): Promise<string> {
     if (this.playerName) return this.playerName;
-    this.playerName = await this.promptService.prompt(
-      "Enter your player name:\n"
-    );
+    const input = await this.promptService.prompt("Enter your player name:\n");
+    if (!input) {
+      console.log("Player name cannot be empty. Please try again.");
+      return this.promptName();
+    }
+    this.playerName = input;
     return this.playerName;
   }
 
-  private async promptGuess(): Promise<string> {
-    return this.promptService.prompt(
-      "Enter your guess (or type 'exit' or 'quit' to quit):\n"
-    );
+  private async promptGuess(): Promise<string | null> {
+    const input = await this.promptService.prompt("Enter your guess:\n", true);
+    return input;
   }
 
   private async getGameStatus() {
@@ -79,14 +81,19 @@ export class WordleClient {
 
     while (this.isPlaying) {
       const guess = await this.promptGuess();
-      if (guess.toLowerCase() === "exit" || guess.toLowerCase() === "quit") {
+
+      console.log("guessguess", guess);
+
+      if (guess === null) {
         this.isPlaying = false;
         break;
       }
+
       if (!guess) {
         console.log("Please enter a non-empty guess.");
         continue;
       }
+
       try {
         const res = await axiosInstance.post("/guess", {
           player: this.playerName,
