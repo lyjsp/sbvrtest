@@ -101,6 +101,8 @@ export class WordleClient {
 
     // Show previous game status if available on first enter
     if (!this.isPlaying && status.guessHistory.length > 0) {
+      console.log(`Max Rounds: ${status.maxRounds}`);
+      console.log(`Remaining Rounds: ${status.remainingRounds}`);
       console.log("\n--- Previous Game Status ---");
       console.log(`Guess History:`);
       this.showGameResultDescription();
