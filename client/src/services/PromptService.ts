@@ -68,7 +68,6 @@ export class PromptService {
     console.log("2. Game status");
     console.log("3. See score board");
     console.log("4. See my score");
-    console.log("5. See my current game results");
     console.log("0. Exit");
   }
 }

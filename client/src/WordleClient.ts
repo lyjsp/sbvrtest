@@ -181,35 +181,6 @@ export class WordleClient {
     }
   }
 
-  private async showMyResults(): Promise<void> {
-    try {
-      const res = await axiosInstance.get("/status");
-
-      console.log("res.data", res.data);
-
-      if (res.data.players) {
-        const result = res.data.players.find(
-          (p: any) => p.name === this.playerName
-        );
-
-        if (result) {
-          console.log("\n--- My Game Results ---");
-          console.log(`Guesses: ${result.guesses.join(", ")}`);
-          if (result.win) {
-            console.log("You are the WINNER!");
-          }
-        } else {
-          console.log("You have not played yet.");
-        }
-      }
-    } catch (err: any) {
-      console.error(
-        "Error fetching results:",
-        err?.response?.data?.error || err.message || err
-      );
-    }
-  }
-
   private setupWebSocket(): void {
     this.wsService.connect(
       `ws://localhost:8080?playerId=${this.playerService.getPlayerId()}&playerName=${
@@ -286,15 +257,12 @@ export class WordleClient {
         case "4":
           await this.showMyScore();
           break;
-        case "5":
-          await this.showMyResults();
-          break;
         case "0":
           console.log("Goodbye!");
           this.promptService.close();
           process.exit(0);
         default:
-          console.log("Invalid option. Please select 0-5.");
+          console.log("Invalid option. Please select 0-4.");
       }
     }
   }
