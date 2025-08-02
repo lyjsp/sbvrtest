@@ -53,7 +53,7 @@ export class GameService {
     this.broadcastPoints(userId, player, result);
 
     if (result.isWon) {
-      this.handleWin(userId, player, guess);
+      this.handleWin(userId, player, result.guess);
     }
 
     return this.buildResponse(userId, result);
