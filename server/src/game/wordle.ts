@@ -68,6 +68,11 @@ export abstract class AbstractWordleGame {
     return this.wordLength;
   }
 
+  public getPlayerCurrentRound(userId: string): number {
+    const playerHistory = this.getPlayerHistory(userId);
+    return playerHistory ? playerHistory.getCurrentRound() : 1;
+  }
+
   public getPlayerHistory(userId: string): PlayerHistory | undefined {
     return this.playerHistories.get(userId);
   }

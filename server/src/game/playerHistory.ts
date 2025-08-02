@@ -52,4 +52,8 @@ export class PlayerHistory {
   getRemainingRounds(): number {
     return this.maxRounds - this.guesses.length;
   }
+
+  getCurrentRound(): number {
+    return this.guesses.length + 1;
+  }
 }

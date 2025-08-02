@@ -4,6 +4,7 @@ import {GuessResult} from "../game/types";
 export class ResponseDto {
   wordLength: number;
   maxRounds: number;
+  currentRound: number;
   remainingRounds: number;
   guess: string;
   results?: LetterResult[];
