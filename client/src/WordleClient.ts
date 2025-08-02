@@ -82,8 +82,6 @@ export class WordleClient {
     while (this.isPlaying) {
       const guess = await this.promptGuess();
 
-      console.log("guessguess", guess);
-
       if (guess === null) {
         this.isPlaying = false;
         break;
