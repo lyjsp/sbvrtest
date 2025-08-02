@@ -1,6 +1,6 @@
 import {axiosInstance} from "./services/axios";
 import {USER_ID_HEADER} from "../../common/src/constants";
-import {PlayerScore} from "../../common/src/game/types";
+import {GuessResult, PlayerScore} from "../../common/src/game/types";
 import {PromptService} from "./services/PromptService";
 import {PlayerService} from "./services/PlayerService";
 import {WebSocketService} from "./services/WebSocketService";
@@ -85,6 +85,14 @@ export class WordleClient {
       return;
     }
 
+    // Show previous game status if available on first enter
+    if (!this.isPlaying && status.guessHistory.length > 0) {
+      console.log("\n--- Previous Game Status ---");
+      console.log(`Guess History:`);
+      this.showGameResultDescription();
+      this.showGameResults(status.guessHistory);
+    }
+
     this.isPlaying = true;
 
     while (this.isPlaying) {
@@ -106,24 +114,14 @@ export class WordleClient {
           guess,
         });
 
-        // Enhanced log for player
+        // Display the game round status
         console.log(
           `Remaining Rounds: ${res.data.remainingRounds}/${res.data.maxRounds}`
         );
-        console.log(`
-- O means Hit (letter is in the target word and in the correct spot)
-- ? means Present (letter is in the target word, but not in the correct spot)
-- _ means Miss (letter is not in the target word)
-          `);
-        console.log(`Your Guesses:`);
 
-        res.data.guessHistory.forEach((item: any, idx: number) => {
-          console.log(
-            `  ${idx + 1}. "${item.guess}" => ${item.results.join(" ")}${
-              item.isWon ? " (WIN)" : ""
-            }`
-          );
-        });
+        // Show the guess results
+        this.showGameResultDescription();
+        this.showGameResults(res.data.guessHistory);
 
         if (res.data.gameOver) {
           console.log(`Game Over! You ${res.data.win ? "won" : "lost"}!`);
@@ -137,6 +135,25 @@ export class WordleClient {
         console.error(err?.response?.data?.error || err.message || err);
       }
     }
+  }
+
+  private showGameResultDescription(): void {
+    console.log(`
+- O means Hit (letter is in the target word and in the correct spot)
+- ? means Present (letter is in the target word, but not in the correct spot)
+- _ means Miss (letter is not in the target word)
+          `);
+  }
+
+  private showGameResults(guessHistory: GuessResult[]): void {
+    console.log(`Your Guesses:`);
+    guessHistory.forEach((item: any, idx: number) => {
+      console.log(
+        `  ${idx + 1}. "${item.guess}" => ${item.results.join(" ")}${
+          item.isWon ? " (WIN)" : ""
+        }`
+      );
+    });
   }
 
   private async showScoreBoard(): Promise<void> {
