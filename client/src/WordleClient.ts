@@ -39,42 +39,45 @@ export class WordleClient {
     return input;
   }
 
-  private async getGameStatus() {
+  private async getGameStatus(): Promise<ResponseDto | undefined> {
     try {
-      const res = await axiosInstance.get("/status");
+      const res = await axiosInstance.get<ResponseDto>("/status");
       return res.data;
     } catch (err: any) {
       console.error(
         "Error fetching game status:",
         err?.response?.data?.error || err.message || err
       );
+      return undefined;
     }
   }
 
-  private async showGameStatus() {
-    try {
-      const status: ResponseDto = await this.getGameStatus();
-      console.log("\n--- Game Status ---");
-      console.log(`Guess History:`);
-      status.guessHistory.forEach((history, i) => {
-        console.log(
-          `${i + 1}. Guess: ${history.guess}, Results: ${history.results.join(
-            ", "
-          )}`
-        );
-      });
-      console.log(`Max Rounds: ${status.maxRounds}`);
-      console.log(`Remaining Rounds: ${status.remainingRounds}`);
-    } catch (err: any) {
-      console.error(
-        "Error showing game status:",
-        err?.response?.data?.error || err.message || err
+  private async showGameStatus(): Promise<void> {
+    const status = await this.getGameStatus();
+    if (!status) {
+      console.log("Failed to fetch game status.");
+      return;
+    }
+    console.log("\n--- Game Status ---");
+    console.log(`Guess History:`);
+    status.guessHistory.forEach((history, i) => {
+      console.log(
+        `${i + 1}. Guess: ${history.guess}, Results: ${history.results.join(
+          ", "
+        )}`
       );
-    }
+    });
+    console.log(`Max Rounds: ${status.maxRounds}`);
+    console.log(`Remaining Rounds: ${status.remainingRounds}`);
   }
 
-  private async playGame() {
-    const status: ResponseDto = await this.getGameStatus();
+  private async playGame(): Promise<void> {
+    const status = await this.getGameStatus();
+
+    if (!status) {
+      console.log("Failed to fetch game status.");
+      return;
+    }
 
     if (status.remainingRounds <= 0) {
       console.log("No remaining rounds. Please wait for next game.");
@@ -113,6 +116,7 @@ export class WordleClient {
 - _ means Miss (letter is not in the target word)
           `);
         console.log(`Your Guesses:`);
+
         res.data.guessHistory.forEach((item: any, idx: number) => {
           console.log(
             `  ${idx + 1}. "${item.guess}" => ${item.results.join(" ")}${
@@ -120,6 +124,7 @@ export class WordleClient {
             }`
           );
         });
+
         if (res.data.gameOver) {
           console.log(`Game Over! You ${res.data.win ? "won" : "lost"}!`);
         }
@@ -134,7 +139,7 @@ export class WordleClient {
     }
   }
 
-  private async showScoreBoard() {
+  private async showScoreBoard(): Promise<void> {
     try {
       const res = await axiosInstance.get("/scoreboard");
       const result: PlayerScore[] = res.data;
@@ -156,7 +161,7 @@ export class WordleClient {
     }
   }
 
-  private async showMyScore() {
+  private async showMyScore(): Promise<void> {
     try {
       const res = await axiosInstance.get("/user/score");
       const result: PlayerScore = res.data;
@@ -176,14 +181,17 @@ export class WordleClient {
     }
   }
 
-  private async showMyResults() {
+  private async showMyResults(): Promise<void> {
     try {
       const res = await axiosInstance.get("/status");
-      console.log("res", res);
+
+      console.log("res.data", res.data);
+
       if (res.data.players) {
         const result = res.data.players.find(
           (p: any) => p.name === this.playerName
         );
+
         if (result) {
           console.log("\n--- My Game Results ---");
           console.log(`Guesses: ${result.guesses.join(", ")}`);
@@ -202,7 +210,7 @@ export class WordleClient {
     }
   }
 
-  private setupWebSocket() {
+  private setupWebSocket(): void {
     this.wsService.connect(
       `ws://localhost:8080?playerId=${this.playerService.getPlayerId()}&playerName=${
         this.playerName
@@ -258,7 +266,7 @@ export class WordleClient {
     );
   }
 
-  public async start() {
+  public async start(): Promise<void> {
     await this.promptName();
     this.setupWebSocket();
 
