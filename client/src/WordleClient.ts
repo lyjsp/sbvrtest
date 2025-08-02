@@ -91,7 +91,7 @@ export class WordleClient {
     console.log(`Remaining Rounds: ${status.remainingRounds}`);
   }
 
-  private async playGame(): Promise<void> {
+  private async playGame(showInitialGameStatus?: boolean): Promise<void> {
     const status = await this.getGameStatus();
 
     if (!status) {
@@ -106,7 +106,7 @@ export class WordleClient {
     }
 
     // Show previous game status if available on first enter
-    if (!this.isPlaying && status.guessHistory.length > 0) {
+    if (showInitialGameStatus && status.guessHistory.length > 0) {
       console.log(`Max Rounds: ${status.maxRounds}`);
       console.log(`Remaining Rounds: ${status.remainingRounds}`);
       console.log("\n--- Previous Game Status ---");
@@ -136,17 +136,16 @@ export class WordleClient {
           guess,
         });
 
-        // Display the game round status
-        console.log(
-          `Remaining Rounds: ${res.data.remainingRounds}/${res.data.maxRounds}`
-        );
-
         // Show the guess results
-        this.showGameResultDescription();
         this.showGameResults(res.data.guessHistory);
 
         if (res.data.gameOver) {
           console.log(`Game Over! You ${res.data.win ? "won" : "lost"}!`);
+        } else {
+          // Display the game round status
+          console.log(
+            `Remaining Rounds: ${res.data.remainingRounds}/${res.data.maxRounds}`
+          );
         }
 
         if (res.data.remainingRounds <= 0) {
@@ -164,7 +163,7 @@ export class WordleClient {
   }
 
   private showGameResults(guessHistory: GuessResult[]): void {
-    console.log(`\n--- Your Guesses:`);
+    console.log(`\n--- Your Guesses: ---`);
     guessHistory.forEach((item: any, idx: number) => {
       console.log(
         `  ${idx + 1}. "${item.guess}" => ${item.results.join(" ")}${
@@ -172,7 +171,6 @@ export class WordleClient {
         }`
       );
     });
-    console.log("--- End of your Guesses ---\n");
   }
 
   private async showScoreBoard(): Promise<void> {
@@ -296,7 +294,7 @@ Welcome ${this.playerName}!`);
 
       switch (choice) {
         case "1":
-          await this.playGame();
+          await this.playGame(true);
           break;
         case "2":
           await this.showGameStatus();
