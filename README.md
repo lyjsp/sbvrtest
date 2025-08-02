@@ -1,7 +1,5 @@
 # Server/Client wordle with host cheating that supports multiple-player (TypeScript)
 
-<img width="410" height="439" alt="absurdle-screenshot" src="https://github.com/user-attachments/assets/25fc2480-1927-4867-b52d-b2c2a0f45b75" />
-
 ## Getting Started
 
 1. **Install dependencies:**
@@ -83,3 +81,7 @@
 - Run all commands from the project root directory as workspace is pre-configured.
 - Each client session is independent; you can test multiplayer by running multiple clients.
 - Restarting the client generates a new user ID, even if you use the same user name.
+
+## Screenshot
+
+<img width="501" height="833" alt="absurdle-screenshot" src="https://github.com/user-attachments/assets/77ef8578-927b-449c-846e-f72529507191" />
