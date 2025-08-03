@@ -4,6 +4,7 @@ import {AbsurdleCandidateResult} from "../../common/types/absurdle";
 import {AbstractWordleGame} from "./abstractWordleGame";
 import {AbsurdlePlayerHistory} from "../playerHistory/absurdlePlayerHistory";
 import {WordleValidator} from "./wordleValidator";
+import {WordleUtil} from "./wordleUtil";
 
 export class AbsurdleGame extends AbstractWordleGame {
   protected playerHistories: Map<string, AbsurdlePlayerHistory>;
@@ -125,23 +126,6 @@ export class AbsurdleGame extends AbstractWordleGame {
     return remainingCandidates[0].result;
   }
 
-  private getNumberOfHitAndPresent(result: LetterResult[]): {
-    hit: number;
-    present: number;
-  } {
-    return result.reduce(
-      (acc, outcome) => {
-        if (outcome === LetterResult.Hit) {
-          acc.hit++;
-        } else if (outcome === LetterResult.Present) {
-          acc.present++;
-        }
-        return acc;
-      },
-      {hit: 0, present: 0}
-    );
-  }
-
   private groupByHit(
     candidates: string[],
     guess: string
@@ -150,7 +134,7 @@ export class AbsurdleGame extends AbstractWordleGame {
     candidates.forEach((candidate) => {
       const result = this.calculateResult(guess, candidate);
       const {hit: numberOfHit, present: numberOfPresent} =
-        this.getNumberOfHitAndPresent(result);
+        WordleUtil.getNumberOfHitAndPresent(result);
 
       if (!map.has(numberOfHit)) {
         map.set(numberOfHit, {candidates: []});
