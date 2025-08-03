@@ -13,13 +13,6 @@ export class WordleGame extends AbstractWordleGame {
     this.answer = this.pickRandomAnswer();
   }
 
-  /**
-   * Pick a random answer from the word list.
-   */
-  protected pickRandomAnswer(): string {
-    return this.wordList[Math.floor(Math.random() * this.wordList.length)];
-  }
-
   public calculateResult(guess: string, answer: string): LetterResult[] {
     const result: LetterResult[] = Array(this.wordLength).fill(
       LetterResult.Miss
@@ -54,20 +47,12 @@ export class WordleGame extends AbstractWordleGame {
   }
 
   /**
-   * Set a specific answer
-   * @param answer the answer word to set
-   */
-  setAnswer(answer: string): void {
-    this.answer = answer.toUpperCase();
-  }
-
-  /**
    * Attempt a guess
    * @param userId player id
    * @param word guess answer
    * @returns GuessResults
    */
-  guess(userId: string, word: string): GuessResult {
+  public guess(userId: string, word: string): GuessResult {
     const normalizedGuess = word.toUpperCase();
 
     WordleValidator.validateGuessFormat(normalizedGuess, this.wordLength);
@@ -96,7 +81,7 @@ export class WordleGame extends AbstractWordleGame {
 
     // Set game over if player has won
     if (guessResult.isWon) {
-      this.firstWinnerId = this.firstWinnerId || userId;
+      this.setFirstWinnerId(this.firstWinnerId || userId);
       this.handleGameOver();
     }
 
@@ -106,25 +91,40 @@ export class WordleGame extends AbstractWordleGame {
   /**
    * Get the maximum number of rounds allowed
    */
-  getMaxRounds(): number {
+  public getMaxRounds(): number {
     return this.maxRounds;
+  }
+
+  /**
+   * Set a specific answer
+   * @param answer the answer word to set
+   */
+  public setAnswer(answer: string): void {
+    this.answer = answer.toUpperCase();
   }
 
   /**
    * Reveal the answer
    */
-  getAnswer(): string {
+  public getAnswer(): string {
     return this.answer;
   }
 
   /**
    * Restart the game with a new random answer.
    */
-  restartGame(): void {
+  public restartGame(): void {
     this.playerHistories.clear();
-    this.answer = this.pickRandomAnswer();
-    this.isGameOver = false;
-    this.gameOverAt = null;
-    this.firstWinnerId = null;
+    this.setAnswer(this.pickRandomAnswer());
+    this.setIsGameOver(false);
+    this.setGameOverAt(null);
+    this.setFirstWinnerId(null);
+  }
+
+  /**
+   * Pick a random answer from the word list.
+   */
+  public pickRandomAnswer(): string {
+    return this.wordList[Math.floor(Math.random() * this.wordList.length)];
   }
 }

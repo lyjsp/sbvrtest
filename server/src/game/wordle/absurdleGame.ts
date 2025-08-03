@@ -80,6 +80,70 @@ export class AbsurdleGame extends AbstractWordleGame {
     return result;
   }
 
+  /**
+   * Get the remaining candidate words for a given guess.
+   * The list of candidates after each round should meet the criteria:
+   * - They should have lowest score in the finished round
+   * - Remaining candidates should match the result of previous rounds.
+   * - If all remaining words has some score, the program will select 1 as the answer
+   * The scoring rule will be:
+   * 1. More Hit will have higher scores.
+   * 2. If the number of Hit is the same, more Present will have higher score.
+   * @param guess The guessed word.
+   * @param playerHistory The player's history.
+   * @returns An array of remaining candidate words.
+   */
+  public getRemainingCandidates(
+    guess: string,
+    playerHistory: AbsurdlePlayerHistory
+  ): {candidate: string; result: LetterResult[]; numberOfHit: number}[] {
+    // Get current candidates
+    const candidates = playerHistory.getCandidateWords();
+
+    // Step 1: Group candidates by number of hits
+    const hitGroups = this.groupByHit(candidates, guess);
+
+    // Step 2: Find candidates with the lowest number of hits
+    const lowestHit = Math.min(...hitGroups.keys());
+    const bestHitCandidates = hitGroups.get(lowestHit)?.candidates || [];
+
+    // Step 3a: If there is only 1 candidate return it
+    if (bestHitCandidates.length === 1) {
+      return bestHitCandidates;
+    }
+    const candidatesWithoutPresent = bestHitCandidates.filter(
+      (c) => c.numberOfPresent === 0
+    );
+
+    // Step 3b: If there are candidates without any present letters, filter and return them
+    if (candidatesWithoutPresent.length > 0) {
+      return candidatesWithoutPresent;
+    }
+
+    // Step 4: Group by number of presents
+    const presentGroups = this.groupByPresent(bestHitCandidates);
+
+    // Step 5: Find candidates with the lowest number of presents
+    const lowestPresent = Math.min(...presentGroups.keys());
+    const bestPresentCandidates =
+      presentGroups.get(lowestPresent)?.candidates || [];
+
+    // Step 6: If there are multiple candidates, return all of them, pick only one (as they cannot coexist)
+    if (bestPresentCandidates.length > 1) {
+      return [this.pickRandomCandidateResult(bestPresentCandidates)];
+    }
+
+    // Step 7: Return candidates
+    return bestPresentCandidates;
+  }
+
+  public restartGame(): void {
+    this.playerHistories.clear();
+    this.isGameOver = false;
+    this.gameOverAt = null;
+    this.firstWinnerId = null;
+  }
+
   private getOrCreatePlayerHistory(userId: string): AbsurdlePlayerHistory {
     let playerHistory = this.playerHistories.get(userId);
     if (!playerHistory) {
@@ -170,69 +234,5 @@ export class AbsurdleGame extends AbstractWordleGame {
     }
     const randomIndex = Math.floor(Math.random() * result.length);
     return result[randomIndex];
-  }
-
-  /**
-   * Get the remaining candidate words for a given guess.
-   * The list of candidates after each round should meet the criteria:
-   * - They should have lowest score in the finished round
-   * - Remaining candidates should match the result of previous rounds.
-   * - If all remaining words has some score, the program will select 1 as the answer
-   * The scoring rule will be:
-   * 1. More Hit will have higher scores.
-   * 2. If the number of Hit is the same, more Present will have higher score.
-   * @param guess The guessed word.
-   * @param playerHistory The player's history.
-   * @returns An array of remaining candidate words.
-   */
-  public getRemainingCandidates(
-    guess: string,
-    playerHistory: AbsurdlePlayerHistory
-  ): {candidate: string; result: LetterResult[]; numberOfHit: number}[] {
-    // Get current candidates
-    const candidates = playerHistory.getCandidateWords();
-
-    // Step 1: Group candidates by number of hits
-    const hitGroups = this.groupByHit(candidates, guess);
-
-    // Step 2: Find candidates with the lowest number of hits
-    const lowestHit = Math.min(...hitGroups.keys());
-    const bestHitCandidates = hitGroups.get(lowestHit)?.candidates || [];
-
-    // Step 3a: If there is only 1 candidate return it
-    if (bestHitCandidates.length === 1) {
-      return bestHitCandidates;
-    }
-    const candidatesWithoutPresent = bestHitCandidates.filter(
-      (c) => c.numberOfPresent === 0
-    );
-
-    // Step 3b: If there are candidates without any present letters, filter and return them
-    if (candidatesWithoutPresent.length > 0) {
-      return candidatesWithoutPresent;
-    }
-
-    // Step 4: Group by number of presents
-    const presentGroups = this.groupByPresent(bestHitCandidates);
-
-    // Step 5: Find candidates with the lowest number of presents
-    const lowestPresent = Math.min(...presentGroups.keys());
-    const bestPresentCandidates =
-      presentGroups.get(lowestPresent)?.candidates || [];
-
-    // Step 6: If there are multiple candidates, return all of them, pick only one (as they cannot coexist)
-    if (bestPresentCandidates.length > 1) {
-      return [this.pickRandomCandidateResult(bestPresentCandidates)];
-    }
-
-    // Step 7: Return candidates
-    return bestPresentCandidates;
-  }
-
-  public restartGame(): void {
-    this.playerHistories.clear();
-    this.isGameOver = false;
-    this.gameOverAt = null;
-    this.firstWinnerId = null;
   }
 }
